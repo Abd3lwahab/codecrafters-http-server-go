@@ -16,7 +16,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	defer l.Close()
+	// defer l.Close()
 
 	for {
 		conn, err := l.Accept()
