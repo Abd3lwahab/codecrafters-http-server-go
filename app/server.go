@@ -62,7 +62,6 @@ func okResponse(body string) string {
 	if body == "" {
 		return "HTTP/1.1 200 OK\r\n\r\n"
 	}
-
 	headers := "Content-Type: text/plain\r\n"
 
 	return "HTTP/1.1 200 OK\r\n" + headers + "Content-Length: " + fmt.Sprint(len(body)) + "\r\n\r\n" + body
