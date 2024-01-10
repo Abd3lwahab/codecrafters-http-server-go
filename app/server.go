@@ -32,7 +32,6 @@ func main() {
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
 
-	okResponse := "HTTP/1.1 200 OK\r\n\r\n"
 	notFoundResponse := "HTTP/1.1 404 Not Found\r\n\r\n"
 
 	buffer := make([]byte, 1024)
@@ -41,16 +40,29 @@ func handleConnection(conn net.Conn) {
 	request := string(buffer)
 	fmt.Println(request)
 
+	userAgent := strings.Split(strings.Split(request, "\r\n")[2], " ")[1]
+	fmt.Println(userAgent)
+
 	path := strings.Split(request, " ")[1]
-	fmt.Println(path)
 
 	if path == "/" {
-		conn.Write([]byte(okResponse))
+		conn.Write([]byte(okResponse("")))
 	} else if strings.HasPrefix(path, "/echo/") {
 		body := strings.TrimPrefix(path, "/echo/")
-		headers := "Content-Type: text/plain\r\nContent-Length: " + fmt.Sprint(len(body)) + "\r\n\r\n"
-		conn.Write([]byte("HTTP/1.1 200 OK\r\n" + headers + body))
+		conn.Write([]byte(okResponse(body)))
+	} else if strings.HasPrefix(path, "/user-agent/") {
+		conn.Write([]byte(okResponse(userAgent)))
 	} else {
 		conn.Write([]byte(notFoundResponse))
 	}
+}
+
+func okResponse(body string) string {
+	if body == "" {
+		return "HTTP/1.1 200 OK\r\n\r\n"
+	}
+
+	headers := "Content-Type: text/plain\r\n"
+
+	return "HTTP/1.1 200 OK\r\n" + headers + "Content-Length: " + fmt.Sprint(len(body)) + "\r\n\r\n" + body
 }
