@@ -44,6 +44,7 @@ func handleConnection(conn net.Conn) {
 	fmt.Println(userAgent)
 
 	path := strings.Split(request, " ")[1]
+	fmt.Println(path)
 
 	if path == "/" {
 		conn.Write([]byte(okResponse("")))
