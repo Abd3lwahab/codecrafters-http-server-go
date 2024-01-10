@@ -51,7 +51,7 @@ func handleConnection(conn net.Conn) {
 	} else if strings.HasPrefix(path, "/echo/") {
 		body := strings.TrimPrefix(path, "/echo/")
 		conn.Write([]byte(okResponse(body)))
-	} else if strings.HasPrefix(path, "/user-agent/") {
+	} else if path == "/user-agent" {
 		conn.Write([]byte(okResponse(userAgent)))
 	} else {
 		conn.Write([]byte(notFoundResponse))
