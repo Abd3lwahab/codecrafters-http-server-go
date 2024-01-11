@@ -1,14 +1,21 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
+var dirFlag = flag.String("directory", ".", "Directory to serve")
+
 func main() {
 	fmt.Println("Logs from your program will appear here!")
+
+	flag.Parse()
+	fmt.Println("Serving directory: " + *dirFlag)
 
 	l, err := net.Listen("tcp", "0.0.0.0:4221")
 	if err != nil {
@@ -51,6 +58,39 @@ func handleConnection(conn net.Conn) {
 	} else if path == "/user-agent" {
 		userAgent := strings.Split(strings.Split(request, "\r\n")[2], " ")[1]
 		conn.Write([]byte(okResponse(userAgent)))
+	} else if strings.HasPrefix(path, "/files/") {
+		fileName := strings.TrimPrefix(path, "/files/")
+		filePath := filepath.Join(*dirFlag, fileName)
+
+		fmt.Println(filePath)
+
+		if _, err := os.Stat(filePath); err != nil {
+			conn.Write([]byte(notFoundResponse))
+			return
+		}
+
+		_, err := os.Open(filePath)
+		if err != nil {
+			conn.Write([]byte(notFoundResponse))
+			return
+		}
+
+		buffer, err := os.ReadFile(filePath)
+		if err != nil {
+			conn.Write([]byte(notFoundResponse))
+			return
+		}
+
+		_, err = os.Stdout.Write(buffer)
+		if err != nil {
+			conn.Write([]byte(notFoundResponse))
+			return
+		}
+
+		fileData := string(buffer)
+		fmt.Println(fileData)
+
+		conn.Write([]byte(okResponse(fileData)))
 	} else {
 		conn.Write([]byte(notFoundResponse))
 	}
