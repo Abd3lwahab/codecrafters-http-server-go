@@ -40,9 +40,6 @@ func handleConnection(conn net.Conn) {
 	request := string(buffer)
 	fmt.Println(request)
 
-	userAgent := strings.Split(strings.Split(request, "\r\n")[2], " ")[1]
-	// fmt.Println(userAgent)
-
 	path := strings.Split(request, " ")[1]
 	fmt.Println(path)
 
@@ -52,6 +49,7 @@ func handleConnection(conn net.Conn) {
 		body := strings.TrimPrefix(path, "/echo/")
 		conn.Write([]byte(okResponse(body)))
 	} else if path == "/user-agent" {
+		userAgent := strings.Split(strings.Split(request, "\r\n")[2], " ")[1]
 		conn.Write([]byte(okResponse(userAgent)))
 	} else {
 		conn.Write([]byte(notFoundResponse))
@@ -60,7 +58,7 @@ func handleConnection(conn net.Conn) {
 
 func okResponse(body string) string {
 	if body == "" {
-		return "HTTP/1.1 200 OK\r\n\r\n\r\n"
+		return "HTTP/1.1 200 OK\r\n\r\n"
 	}
 	headers := "Content-Type: text/plain\r\n"
 
