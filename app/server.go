@@ -90,7 +90,7 @@ func handleConnection(conn net.Conn) {
 		fileData := string(buffer)
 		fmt.Println(fileData)
 
-		conn.Write([]byte(okResponse(fileData, "text/octet-stream")))
+		conn.Write([]byte(okResponse(fileData, "application/octet-stream")))
 	} else {
 		conn.Write([]byte(notFoundResponse))
 	}
