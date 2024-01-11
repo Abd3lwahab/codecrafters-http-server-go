@@ -60,7 +60,7 @@ func handleConnection(conn net.Conn) {
 
 func okResponse(body string) string {
 	if body == "" {
-		return "HTTP/1.1 200 OK\r\n\r\n"
+		return "HTTP/1.1 200 OK\r\n\r\n\r\n"
 	}
 	headers := "Content-Type: text/plain\r\n"
 
