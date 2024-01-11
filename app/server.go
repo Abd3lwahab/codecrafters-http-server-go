@@ -41,7 +41,7 @@ func handleConnection(conn net.Conn) {
 	fmt.Println(request)
 
 	userAgent := strings.Split(strings.Split(request, "\r\n")[2], " ")[1]
-	fmt.Println(userAgent)
+	// fmt.Println(userAgent)
 
 	path := strings.Split(request, " ")[1]
 	fmt.Println(path)
