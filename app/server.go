@@ -51,13 +51,13 @@ func handleConnection(conn net.Conn) {
 	fmt.Println(path)
 
 	if path == "/" {
-		conn.Write([]byte(okResponse("")))
+		conn.Write([]byte(okResponse("", "")))
 	} else if strings.HasPrefix(path, "/echo/") {
 		body := strings.TrimPrefix(path, "/echo/")
-		conn.Write([]byte(okResponse(body)))
+		conn.Write([]byte(okResponse(body, "text/plain")))
 	} else if path == "/user-agent" {
 		userAgent := strings.Split(strings.Split(request, "\r\n")[2], " ")[1]
-		conn.Write([]byte(okResponse(userAgent)))
+		conn.Write([]byte(okResponse(userAgent, "text/plain")))
 	} else if strings.HasPrefix(path, "/files/") {
 		fileName := strings.TrimPrefix(path, "/files/")
 		filePath := filepath.Join(*dirFlag, fileName)
@@ -90,17 +90,17 @@ func handleConnection(conn net.Conn) {
 		fileData := string(buffer)
 		fmt.Println(fileData)
 
-		conn.Write([]byte(okResponse(fileData)))
+		conn.Write([]byte(okResponse(fileData, "text/octet-stream")))
 	} else {
 		conn.Write([]byte(notFoundResponse))
 	}
 }
 
-func okResponse(body string) string {
+func okResponse(body string, contentType string) string {
 	if body == "" {
 		return "HTTP/1.1 200 OK\r\n\r\n"
 	}
-	headers := "Content-Type: text/plain\r\n"
+	headers := fmt.Sprintf("Content-Type: %s\r\n", contentType)
 
 	return "HTTP/1.1 200 OK\r\n" + headers + "Content-Length: " + fmt.Sprint(len(body)) + "\r\n\r\n" + body
 }
