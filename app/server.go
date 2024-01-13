@@ -47,6 +47,9 @@ func handleConnection(conn net.Conn) {
 	request := string(buffer)
 	fmt.Println(request)
 
+	method := strings.Split(request, " ")[0]
+	fmt.Println(method)
+
 	path := strings.Split(request, " ")[1]
 	fmt.Println(path)
 
@@ -59,38 +62,63 @@ func handleConnection(conn net.Conn) {
 		userAgent := strings.Split(strings.Split(request, "\r\n")[2], " ")[1]
 		conn.Write([]byte(okResponse(userAgent, "text/plain")))
 	} else if strings.HasPrefix(path, "/files/") {
-		fileName := strings.TrimPrefix(path, "/files/")
-		filePath := filepath.Join(*dirFlag, fileName)
+		if method == "GET" {
 
-		fmt.Println(filePath)
+			fileName := strings.TrimPrefix(path, "/files/")
+			filePath := filepath.Join(*dirFlag, fileName)
 
-		if _, err := os.Stat(filePath); err != nil {
-			conn.Write([]byte(notFoundResponse))
-			return
+			fmt.Println(filePath)
+
+			if _, err := os.Stat(filePath); err != nil {
+				conn.Write([]byte(notFoundResponse))
+				return
+			}
+
+			_, err := os.Open(filePath)
+			if err != nil {
+				conn.Write([]byte(notFoundResponse))
+				return
+			}
+
+			buffer, err := os.ReadFile(filePath)
+			if err != nil {
+				conn.Write([]byte(notFoundResponse))
+				return
+			}
+
+			_, err = os.Stdout.Write(buffer)
+			if err != nil {
+				conn.Write([]byte(notFoundResponse))
+				return
+			}
+
+			fileData := string(buffer)
+			fmt.Println(fileData)
+
+			conn.Write([]byte(okResponse(fileData, "application/octet-stream")))
+		} else {
+
+			fileName := strings.TrimPrefix(path, "/files/")
+			filePath := filepath.Join(*dirFlag, fileName)
+			fmt.Println(filePath)
+
+			body := strings.Split(request, "\r\n\r\n")[1]
+			fmt.Println(body)
+
+			file, err := os.Create(filePath)
+			if err != nil {
+				conn.Write([]byte(notFoundResponse))
+				return
+			}
+
+			_, err = file.WriteString(body)
+			if err != nil {
+				conn.Write([]byte(notFoundResponse))
+				return
+			}
+
+			conn.Write([]byte("HTTP/1.1 201 OK\r\n\r\n"))
 		}
-
-		_, err := os.Open(filePath)
-		if err != nil {
-			conn.Write([]byte(notFoundResponse))
-			return
-		}
-
-		buffer, err := os.ReadFile(filePath)
-		if err != nil {
-			conn.Write([]byte(notFoundResponse))
-			return
-		}
-
-		_, err = os.Stdout.Write(buffer)
-		if err != nil {
-			conn.Write([]byte(notFoundResponse))
-			return
-		}
-
-		fileData := string(buffer)
-		fmt.Println(fileData)
-
-		conn.Write([]byte(okResponse(fileData, "application/octet-stream")))
 	} else {
 		conn.Write([]byte(notFoundResponse))
 	}
