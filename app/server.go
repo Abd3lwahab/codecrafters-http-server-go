@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"net"
@@ -103,6 +104,8 @@ func handleConnection(conn net.Conn) {
 			fmt.Println(filePath)
 
 			body := strings.Split(request, "\r\n\r\n")[1]
+			bodyBytes := bytes.Trim([]byte(body), "\x00")
+
 			fmt.Println(body)
 
 			file, err := os.Create(filePath)
@@ -111,7 +114,7 @@ func handleConnection(conn net.Conn) {
 				return
 			}
 
-			_, err = file.WriteString(body)
+			_, err = file.Write(bodyBytes)
 			if err != nil {
 				conn.Write([]byte(notFoundResponse))
 				return
